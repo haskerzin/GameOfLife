@@ -41,7 +41,7 @@ class Game:
                 self.cells.append([i,j])
 
     def distance(self, x, y):
-        return np.min(np.absolute(np.array(x) - np.array(y)))
+        return np.max(np.absolute(np.array(x) - np.array(y)))
 
     '''
     Given a cell it checks how many celll in its neighborhood (distance = 1) are alive.
@@ -90,7 +90,7 @@ class Game:
     
     def update_alive_cells(self):
         for x in self.alive_cells:
-            if self.check_neighbors(x) < 2 or self.check_neighbors(x) > 3:
+            if self.check_neighbors(x) - 1 < 2 or self.check_neighbors(x) - 1 > 3:
                 self.alive_cells.remove(x)
     
     '''
@@ -105,8 +105,8 @@ class Game:
                     if y not in active_cells:
                         active_cells.append(y)
         
-        # Guaranteeing the alive cells are in the active_cells
-        active_cells = list(set(active_cells) | set(self.alive_cells))
+        # Guaranteeing the alive cells are not in the active_cells
+        active_cells = list(set(active_cells) - set(self.alive_cells))
         
         self.active_cells = active_cells
 
@@ -115,10 +115,12 @@ class Game:
     '''
     def generate_alive_cells(self):
 
-        for x in set(self.active_cells) -  set(self.alive_cells):
-            if self.check_neighbors == 3:
+        for x in self.active_cells:
+            print(x, self.check_neighbors(x))
+            if self.check_neighbors(x) == 3:
                 self.new_cells.append(x)
         
+        print(self.new_cells)
         # Here we can use the sum of lists because there are no repetitions
         self.alive_cells = self.alive_cells + self.new_cells
         # Reseting self.new_cells
@@ -138,15 +140,22 @@ class Game:
         pygame.init()
 
         # Testing the function with a choice of alive cells:
-        self.alive_cells = [(20,20), (21,20), (21,21), (22,20), (22,21), (22,22)]
+        self.alive_cells = [(20,20), (21,20), (22,20), (20,21), (22,21), (21,22)]
+        self.update_active_cells()
         # self.alive_cells = [(20,20)]
 
-
         running = True
+        setup_inicial = True
 
         while running:
 
-            self.screen
+            if setup_inicial == True:
+                self.screen.fill(self.black)
+                self.draw_grid()
+                self.draw_alive_cells()
+                pygame.time.wait(3000)
+                setup_inicial = False
+
             self.screen.fill(self.black)
             self.draw_grid()
             self.draw_alive_cells()
@@ -159,7 +168,7 @@ class Game:
 
             pygame.display.update()
 
-            pygame.time.wait(2000)
+            pygame.time.wait(3000)
 
             # If all the cells die exit
             if len(self.alive_cells) == 0:
