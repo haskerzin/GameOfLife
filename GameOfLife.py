@@ -88,11 +88,6 @@ class Game:
         
         return neighborhood
     
-    def update_alive_cells(self):
-        for x in self.alive_cells:
-            if self.check_neighbors(x) - 1 < 2 or self.check_neighbors(x) - 1 > 3:
-                self.alive_cells.remove(x)
-    
     '''
     Method to enhance performance when applying rule 4. The idea is to minimize the number of cells
     that we need to check its neighbors. It updates the list self.active_cells.
@@ -116,23 +111,32 @@ class Game:
     def generate_alive_cells(self):
 
         for x in self.active_cells:
-            print(x, self.check_neighbors(x))
+            # print(x, self.check_neighbors(x))
             if self.check_neighbors(x) == 3:
                 self.new_cells.append(x)
+
+    def update_alive_cells(self):
+        remover = []
+        for x in self.alive_cells:
+            if self.check_neighbors(x) < 2 or self.check_neighbors(x) > 3:
+                remover.append(x)
         
-        print(self.new_cells)
-        # Here we can use the sum of lists because there are no repetitions
+        self.alive_cells = list(set(self.alive_cells) - set(remover))
+        # Adding the new cells
         self.alive_cells = self.alive_cells + self.new_cells
-        # Reseting self.new_cells
+        # for y in self.new_cells:
+        #     self.alive_cells.append(y)
+        # Reseting the self.new_cells
         self.new_cells = []
 
     '''
     Method that implements the 4 rules
     '''
     def update(self):
+        self.generate_alive_cells()
         self.update_alive_cells()
         self.update_active_cells()
-        self.generate_alive_cells()
+        
                 
     
     def draw_screen(self):
@@ -140,9 +144,10 @@ class Game:
         pygame.init()
 
         # Testing the function with a choice of alive cells:
-        self.alive_cells = [(20,20), (21,20), (22,20), (20,21), (22,21), (21,22)]
+        # self.alive_cells = [(20,20), (21,20), (22,20), (20,21), (22,21), (21,22)]
+        self.alive_cells = [(20,20), (21,20), (22,20)]
         self.update_active_cells()
-        # self.alive_cells = [(20,20)]
+        # print(self.active_cells)
 
         running = True
         setup_inicial = True
