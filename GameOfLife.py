@@ -63,6 +63,24 @@ class Game:
     def draw_alive_cells(self):
         for pos in self.alive:
             pygame.draw.rect(self.screen, self.red, [pos[0]*10, pos[1]*10, 10, 10])
+
+    
+    def neighborhood(self, cell, distance):
+        neighborhood = []
+        x_min = max(0, cell[0] - distance)
+        x_max = min(self.width, cell[0] + distance)
+        y_min = max(0, cell[1] - distance)
+        y_max = min(self.height, cell[1] + distance)
+
+        for i in range(x_min, x_max + 1):
+            for j in range(y_min, y_max + 1):
+                neighborhood.append((i,j))
+        
+        # Removing the cell itself from the neighborhood
+        neighborhood.remove(cell)
+        
+        return neighborhood
+
                 
             
     
