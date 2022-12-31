@@ -2,11 +2,12 @@ import pygame
 import sys
 import numpy as np
 
-# 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-# 2. Any live cell with two or three live neighbours lives on to the next generation.
-# 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-# 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-
+'''
+1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+2. Any live cell with two or three live neighbours lives on to the next generation.
+3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+'''
 class Game:
 
     def __init__(self):
@@ -21,7 +22,9 @@ class Game:
         self.black = (0, 0, 0)
         self.red = (255, 0, 0)
         self.cells = []
-        self.alive = []
+        self.alive_cells = []
+        self.active_cells = []
+        self.new_cells = []
         self.map_cells()
 
     
@@ -40,9 +43,16 @@ class Game:
     def distance(self, x, y):
         return np.min(np.absolute(np.array(x) - np.array(y)))
 
+    '''
+    Given a cell it checks how many celll in its neighborhood (distance = 1) are alive.
+
+    :returns: number of alive cells in the neighborhood
+
+    :rtype: int 
+    '''
     def check_neighbors(self, cell):
         neighbors = []
-        for x in self.alive:
+        for x in self.alive_cells:
             if self.distance(x, cell) == 1:
                 neighbors.append(x)
             if len(neighbors) == 8:
@@ -51,20 +61,17 @@ class Game:
         
         return len(neighbors)
 
-    
-    def update_cells(self):
-        for x in self.alive:
-            if self.check_neighbors(x) < 2 or self.check_neighbors(x) > 3:
-                self.alive.remove(x)
-
-        # Implement the rule 4        
-
-
     def draw_alive_cells(self):
-        for pos in self.alive:
+        for pos in self.alive_cells:
             pygame.draw.rect(self.screen, self.red, [pos[0]*10, pos[1]*10, 10, 10])
 
-    
+    '''
+    Method that generates the neighborhood of a cell given a distance.
+
+    :returns: list of cells of the neighborhood of the cell given considering the defined distante.
+
+    :rtype: list
+    '''
     def neighborhood(self, cell, distance):
         neighborhood = []
         x_min = max(0, cell[0] - distance)
@@ -80,17 +87,59 @@ class Game:
         neighborhood.remove(cell)
         
         return neighborhood
+    
+    def update_alive_cells(self):
+        for x in self.alive_cells:
+            if self.check_neighbors(x) < 2 or self.check_neighbors(x) > 3:
+                self.alive_cells.remove(x)
+    
+    '''
+    Method to enhance performance when applying rule 4. The idea is to minimize the number of cells
+    that we need to check its neighbors. It updates the list self.active_cells.
+    '''
+    def update_active_cells(self):
+        active_cells = []
+        for x in self.alive_cells:
+            if x not in active_cells:
+                for y in self.neighborhood(x,1):
+                    if y not in active_cells:
+                        active_cells.append(y)
+        
+        # Guaranteeing the alive cells are in the active_cells
+        active_cells = list(set(active_cells) | set(self.alive_cells))
+        
+        self.active_cells = active_cells
 
+    '''
+    Method to generate new alive cells based on the rule 4.
+    '''
+    def generate_alive_cells(self):
+
+        for x in set(self.active_cells) -  set(self.alive_cells):
+            if self.check_neighbors == 3:
+                self.new_cells.append(x)
+        
+        # Here we can use the sum of lists because there are no repetitions
+        self.alive_cells = self.alive_cells + self.new_cells
+        # Reseting self.new_cells
+        self.new_cells = []
+
+    '''
+    Method that implements the 4 rules
+    '''
+    def update(self):
+        self.update_alive_cells()
+        self.update_active_cells()
+        self.generate_alive_cells()
                 
-            
     
     def draw_screen(self):
 
         pygame.init()
 
         # Testing the function with a choice of alive cells:
-        self.alive = [(20,20), (21,20), (21,21), (22,20)]
-        # self.alive = [(20,20)]
+        self.alive_cells = [(20,20), (21,20), (21,21), (22,20), (22,21), (22,22)]
+        # self.alive_cells = [(20,20)]
 
 
         running = True
@@ -101,15 +150,21 @@ class Game:
             self.screen.fill(self.black)
             self.draw_grid()
             self.draw_alive_cells()
-            self.update_cells()
+            self.update()
+
             for event in pygame.event.get():
 
                 if event.type == pygame.QUIT:
                     running = False
-            
-            pygame.time.wait(3000)
 
             pygame.display.update()
+
+            pygame.time.wait(2000)
+
+            # If all the cells die exit
+            if len(self.alive_cells) == 0:
+                running = False
+
             self.fpsClock.tick(self.fps)
         
         pygame.quit()
