@@ -143,11 +143,41 @@ class Game:
 
         pygame.init()
 
-        # Testing the function with a choice of alive cells:
-        # self.alive_cells = [(20,20), (21,20), (22,20), (20,21), (22,21), (21,22)]
-        self.alive_cells = [(20,20), (21,20), (22,20)]
+        # Testing examples of alive cells:
+        # Bliker (period 2)        
+        # self.alive_cells = [(20,20), (21,20), (22,20)]
+        # Beacon (period 2)
+        # self.alive_cells =  [(20,19),(21,19),(20,20),(21,20), (22,21),(23,21),(22,22),(23,22)]
+        # Glider
+        self.alive_cells = [(20,19),(21,20),(22,20), (22,19), (22,18)]
+        # Pulsar
+        # self.alive_cells = [(2,4), (2,5), (2,6), 
+        #                     (2,10), (2,11), (2,12), 
+                            
+        #                     (4,2), (5,2), (6,2), 
+        #                     (10,2), (11,2), (12,2), 
+                            
+        #                     (14,4), (14,5), (14,6), 
+        #                     (14,10), (14,11), (14,12), 
+                            
+        #                     (4,14), (5,14), (6,14),
+        #                     (10,14), (11,14), (12,14),
+                            
+        #                     (4,7), (5,7), (6,7),
+        #                     (10,7), (11,7), (12,7),
+                            
+        #                     (4,9), (5,9), (6,9),
+        #                     (10,9), (11,9), (12,9),
+                            
+        #                     (7,4), (7,5), (7,6),
+        #                     (7,10), (7,11), (7,12),
+                            
+        #                     (9,4), (9,5), (9,6),
+        #                     (9,10), (9,11), (9,12)]
+
+        # First generation of active cells
         self.update_active_cells()
-        # print(self.active_cells)
+        
 
         running = True
         setup_inicial = True
@@ -159,6 +189,7 @@ class Game:
                 self.draw_grid()
                 self.draw_alive_cells()
                 pygame.time.wait(3000)
+                pygame.display.update()
                 setup_inicial = False
 
             self.screen.fill(self.black)
@@ -173,7 +204,7 @@ class Game:
 
             pygame.display.update()
 
-            pygame.time.wait(3000)
+            pygame.time.wait(100)
 
             # If all the cells die exit
             if len(self.alive_cells) == 0:
